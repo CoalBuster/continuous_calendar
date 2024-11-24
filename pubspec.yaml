@@ -1,0 +1,22 @@
+name: continuous_calendar
+description: "A new Flutter package project."
+version: 1.0.0
+homepage:
+
+environment:
+  sdk: ^3.5.1
+  flutter: ">=1.17.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  
+  date_n_time: ^1.0.1
+  intl: ^0.19.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
