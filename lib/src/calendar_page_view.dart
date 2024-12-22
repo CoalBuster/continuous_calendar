@@ -4,11 +4,10 @@ import 'package:flutter/widgets.dart';
 
 import 'material_drag_scroll_behavior.dart';
 import 'month_view.dart';
-import 'paged_scroll_physics.dart';
 
 import 'dart:math' as math;
 
-class CalendarView extends StatefulWidget {
+class CalendarPageView extends StatefulWidget {
   final Color Function(LocalDate)? dayColorBuilder;
   final Color Function(LocalDate)? dayTextColorBuilder;
   final LocalDate firstDate;
@@ -16,7 +15,7 @@ class CalendarView extends StatefulWidget {
   final LocalDate initialDate;
   final ValueChanged<LocalDate>? onDisplayedMonthChanged;
 
-  CalendarView({
+  CalendarPageView({
     required this.firstDate,
     required this.lastDate,
     this.dayColorBuilder,
@@ -27,83 +26,46 @@ class CalendarView extends StatefulWidget {
   }) : initialDate = initialDate ?? LocalDate.now();
 
   @override
-  State<StatefulWidget> createState() => _CalenderViewState();
+  State<StatefulWidget> createState() => _CalenderPageViewState();
 }
 
-class _CalenderViewState extends State<CalendarView> {
-  final _center = UniqueKey();
-  late PageController _controller;
-  var _monthOffset = 0;
+class _CalenderPageViewState extends State<CalendarPageView> {
+  PageController? _controller;
+  late LocalDate _firstMonth;
+  late int _monthOffset;
 
   @override
   void initState() {
     super.initState();
-    _controller = PageController();
-    _controller.addListener(_onScrollUpdate);
+    _firstMonth = widget.firstDate.atStartOfMonth();
+    _monthOffset = Period.between(_firstMonth, widget.initialDate).months;
   }
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   final firstMonth = widget.firstDate.atStartOfMonth();
-  //   _monthOffset = Period.between(firstMonth, widget.initialDate).months;
-  //   _controller
-  // }
-
-  // @override
-  // void didChangeDependencies() {
-  //   super.didChangeDependencies();
-  //   _updateTabController();
-  //   _currentIndex = _controller!.index;
-  //   if (_pageController == null) {
-  //     _pageController = PageController(
-  //       initialPage: _currentIndex!,
-  //       viewportFraction: widget.viewportFraction,
-  //     );
-  //   } else {
-  //     _pageController!.jumpToPage(_currentIndex!);
-  //   }
-  // }
 
   @override
   Widget build(BuildContext context) {
+    final totalMonths = Period.between(_firstMonth, widget.lastDate).months + 1;
     final double itemExtent = 42 * 7 + 32;
 
     final list = LayoutBuilder(
       builder: (context, constraints) {
         final width = constraints.maxWidth;
 
-        _controller.dispose();
+        _controller?.dispose();
         _controller = PageController(
+          initialPage: _monthOffset,
           viewportFraction: math.min(1, itemExtent / width),
         );
-        _controller.addListener(_onScrollUpdate);
+        _controller!.addListener(_onScrollUpdate);
 
-        return CustomScrollView(
+        return PageView.builder(
           scrollBehavior: MaterialDragScrollBehavior(),
           scrollDirection: Axis.horizontal,
-          physics: PageScrollPhysics(),
-          //physics: PagedScrollPhysics(itemDimension: itemExtent),
           controller: _controller,
-          center: _center,
-          anchor: math.max(0, 0.5 - itemExtent / width / 2),
-          slivers: [
-            SliverList.builder(
-              itemBuilder: (context, index) {
-                final month = widget.initialDate - Period(months: index + 1);
-                return _buildMonth(month);
-              },
-            ),
-            SliverToBoxAdapter(
-              key: _center,
-              child: _buildMonth(widget.initialDate),
-            ),
-            SliverList.builder(
-              itemBuilder: (context, index) {
-                final month = widget.initialDate + Period(months: index + 1);
-                return _buildMonth(month);
-              },
-            ),
-          ],
+          itemCount: totalMonths,
+          itemBuilder: (context, index) {
+            final month = _firstMonth + Period(months: index);
+            return _buildMonth(month);
+          },
         );
       },
     );
@@ -115,7 +77,7 @@ class _CalenderViewState extends State<CalendarView> {
   }
 
   Widget _buildMonth(LocalDate month) {
-    final startDate = month.copyWith(dayOfMonth: 1);
+    final startDate = month.atStartOfMonth();
     final endDate = month.plus(1, ChronoUnit.months).copyWith(dayOfMonth: 0);
     final range = LocalDateRange(startDate, endDate);
     Map<LocalDate, Color>? dayColorMap;
@@ -149,18 +111,16 @@ class _CalenderViewState extends State<CalendarView> {
   }
 
   _onScrollUpdate() {
-    if (!_controller.hasClients) {
+    if (!_controller!.hasClients) {
       return;
     }
 
-    final newMonthOffset = _controller.page!.round();
+    final newMonthOffset = _controller!.page!.round();
 
     if (_monthOffset != newMonthOffset) {
       setState(() {
         _monthOffset = newMonthOffset;
-        final month = widget.initialDate
-            .atStartOfMonth()
-            .plus(_monthOffset, ChronoUnit.months);
+        final month = _firstMonth.plus(_monthOffset, ChronoUnit.months);
         widget.onDisplayedMonthChanged?.call(month);
       });
     }
