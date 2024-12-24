@@ -8,20 +8,24 @@ import 'month_view.dart';
 import 'dart:math' as math;
 
 class CalendarPageView extends StatefulWidget {
-  final Color Function(LocalDate)? dayColorBuilder;
-  final Color Function(LocalDate)? dayTextColorBuilder;
+  final Map<LocalDate, WidgetStateProperty<Color?>>? dayBackgroundColorMap;
+  final Map<LocalDate, WidgetStateProperty<Color?>>? dayForegroundColorMap;
+  final Color? rangeSelectionBackgroundColor;
   final LocalDate firstDate;
   final LocalDate lastDate;
   final LocalDate initialDate;
   final ValueChanged<LocalDate>? onDisplayedMonthChanged;
+  final SelectableDatePredicate? selectableDayPredicate;
 
   CalendarPageView({
     required this.firstDate,
     required this.lastDate,
-    this.dayColorBuilder,
-    this.dayTextColorBuilder,
+    this.dayBackgroundColorMap,
+    this.dayForegroundColorMap,
+    this.rangeSelectionBackgroundColor,
     LocalDate? initialDate,
     this.onDisplayedMonthChanged,
+    this.selectableDayPredicate,
     super.key,
   }) : initialDate = initialDate ?? LocalDate.now();
 
@@ -33,6 +37,8 @@ class _CalenderPageViewState extends State<CalendarPageView> {
   PageController? _controller;
   late LocalDate _firstMonth;
   late int _monthOffset;
+  LocalDate? _selectedStartDate;
+  LocalDate? _selectedEndDate;
 
   @override
   void initState() {
@@ -77,37 +83,36 @@ class _CalenderPageViewState extends State<CalendarPageView> {
   }
 
   Widget _buildMonth(LocalDate month) {
-    final startDate = month.atStartOfMonth();
-    final endDate = month.plus(1, ChronoUnit.months).copyWith(dayOfMonth: 0);
-    final range = LocalDateRange(startDate, endDate);
-    Map<LocalDate, Color>? dayColorMap;
-    Map<LocalDate, Color>? dayTextColorMap;
-
-    if (widget.dayColorBuilder != null) {
-      dayColorMap = {
-        for (var date in range.toLocalDates())
-          date: widget.dayColorBuilder!(date)
-      };
-    }
-
-    if (widget.dayTextColorBuilder != null) {
-      dayTextColorMap = {
-        for (var date in range.toLocalDates())
-          date: widget.dayTextColorBuilder!(date)
-      };
-    }
-
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 16),
       child: SizedBox(
         width: 42 * 7,
         child: MonthView(
-          dayColorMap: dayColorMap,
-          dayTextColorMap: dayTextColorMap,
+          dayBackgroundColorMap: widget.dayBackgroundColorMap,
+          dayForegroundColorMap: widget.dayForegroundColorMap,
+          rangeSelectionBackgroundColor: widget.rangeSelectionBackgroundColor,
           month: month,
+          selectedStartDate: _selectedStartDate,
+          selectedEndDate: _selectedEndDate,
+          selectableDayPredicate: widget.selectableDayPredicate,
+          onChanged: _onChanged,
         ),
       ),
     );
+  }
+
+  _onChanged(LocalDate date) {
+    setState(() {
+      if (_selectedStartDate == null ||
+          _selectedEndDate != null ||
+          date < _selectedStartDate!) {
+        _selectedStartDate = date;
+        _selectedEndDate = null;
+        return;
+      }
+
+      _selectedEndDate = date;
+    });
   }
 
   _onScrollUpdate() {

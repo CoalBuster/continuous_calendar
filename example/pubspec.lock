@@ -52,10 +52,10 @@ packages:
     dependency: "direct main"
     description:
       name: date_n_time
-      sha256: cb3bda6ee6339ec97d21e9fd7903187dfa61f93f2b50d804fb4fa6f80e34bced
+      sha256: de28701dc56003a8cfc7351fd04b6e392deeb093d46960b0a0906b0bd3a004d2
       url: "https://pub.dev"
     source: hosted
-    version: "1.0.4"
+    version: "1.0.7"
   fake_async:
     dependency: transitive
     description:

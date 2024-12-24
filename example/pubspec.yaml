@@ -15,7 +15,7 @@ dependencies:
 
   continuous_calendar:
     path: ../
-  date_n_time: ^1.0.4
+  date_n_time: ^1.0.7
 
 dev_dependencies:
   flutter_test:

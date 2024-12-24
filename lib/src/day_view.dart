@@ -3,42 +3,57 @@ import 'package:flutter/material.dart';
 
 class DayView extends StatelessWidget {
   final LocalDate date;
-  // final LocalDateRange? selection;
   final bool enabled;
   final bool isInsideSelectedRange;
   final bool isFirstDayOfSelectedRange;
   final bool isLastDayOfSelectedRange;
-  final Color? backgroundColor;
-  final Color? foregroundColor;
-  final Color highlightColor;
-  final Color? selectedColor;
+  final WidgetStateProperty<Color?>? backgroundColor;
+  final WidgetStateProperty<Color?>? foregroundColor;
+  final Color? rangeSelectionBackgroundColor;
+  final ValueChanged<LocalDate>? onChanged;
 
   const DayView({
     required this.date,
     required this.enabled,
-    // this.selection,
     required this.isInsideSelectedRange,
     required this.isFirstDayOfSelectedRange,
     required this.isLastDayOfSelectedRange,
     this.backgroundColor,
     this.foregroundColor,
-    required this.highlightColor,
-    this.selectedColor,
+    this.rangeSelectionBackgroundColor,
+    this.onChanged,
     super.key,
   });
 
   @override
   Widget build(BuildContext context) {
+    final calendarTheme = DatePickerTheme.of(context);
+    final calendarDefaultTheme = DatePickerTheme.defaults(context);
     final cardTheme = CardTheme.of(context);
-    final theme = Theme.of(context);
-    final textTheme = theme.textTheme;
+    final textTheme = Theme.of(context).textTheme;
 
-    TextStyle? dayTextStyle = textTheme.bodyMedium
-        ?.apply(color: enabled ? foregroundColor : theme.disabledColor);
+    final Set<WidgetState> states = {
+      if (!enabled) WidgetState.disabled,
+      if (isFirstDayOfSelectedRange || isLastDayOfSelectedRange)
+        WidgetState.selected,
+    };
 
-    // final isSelected = selection?.contains(date) ?? false;
-    // final isFirstDay = isSelected && date == selection!.start;
-    // final isLastDay = isSelected && date == selection!.end;
+    final resolvedBackgroundColor = backgroundColor?.resolve(states) ??
+        calendarTheme.dayBackgroundColor?.resolve(states) ??
+        calendarDefaultTheme.dayBackgroundColor?.resolve(states);
+    final resolvedForegroundColor =
+        (isInsideSelectedRange ? null : foregroundColor?.resolve(states)) ??
+            calendarTheme.dayForegroundColor?.resolve(states) ??
+            calendarDefaultTheme.dayForegroundColor?.resolve(states);
+    final resolvedRangeSelectionBackgroundColor =
+        rangeSelectionBackgroundColor ??
+            calendarTheme.rangeSelectionBackgroundColor ??
+            calendarDefaultTheme.rangeSelectionBackgroundColor;
+    final resolvedOverlayColor =
+        calendarTheme.dayOverlayColor ?? calendarDefaultTheme.dayOverlayColor;
+
+    TextStyle? dayTextStyle =
+        textTheme.bodyMedium?.apply(color: resolvedForegroundColor);
 
     final localizations = MaterialLocalizations.of(context);
 
@@ -55,13 +70,22 @@ class DayView extends StatelessWidget {
       return widget;
     }
 
+    if (onChanged != null) {
+      widget = InkWell(
+        overlayColor: resolvedOverlayColor,
+        onTap: () => onChanged!(date),
+        child: widget,
+      );
+    }
+
     if (isFirstDayOfSelectedRange ||
         isLastDayOfSelectedRange ||
         !isInsideSelectedRange) {
       widget = Card.filled(
-        color: isInsideSelectedRange ? selectedColor : backgroundColor,
+        color: resolvedBackgroundColor ?? Colors.transparent,
         margin: const EdgeInsets.all(2),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+        clipBehavior: Clip.antiAlias,
         child: widget,
       );
     }
@@ -77,14 +101,14 @@ class DayView extends StatelessWidget {
               Expanded(
                 child: Container(
                   color: !isFirstDayOfSelectedRange && isInsideSelectedRange
-                      ? highlightColor
+                      ? resolvedRangeSelectionBackgroundColor
                       : null,
                 ),
               ),
               Expanded(
                 child: Container(
                   color: !isLastDayOfSelectedRange && isInsideSelectedRange
-                      ? highlightColor
+                      ? resolvedRangeSelectionBackgroundColor
                       : null,
                 ),
               ),
