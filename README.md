@@ -4,7 +4,9 @@ An adaptable heatmap + picker calendar that diplays multiple months, perfect for
 
 ## Features
 
-TODO: List what your package can do. Maybe include images, gifs, or videos.
+![Screenshot of horizontal calendar widget](https://raw.githubusercontent.com/coalbuster/continuous_calendar/main/screenshots/calendar_horizontal.png)
+
+Currently only horizontal layout is supported.
 
 ## Getting started
 
