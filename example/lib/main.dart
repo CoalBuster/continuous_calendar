@@ -38,6 +38,7 @@ class MyHome extends StatefulWidget {
 
 class _MyHomeState extends State<MyHome> {
   LocalDate displayedMonth = LocalDate.now().atStartOfMonth();
+  CalendarPageController controller = CalendarPageController();
 
   @override
   Widget build(BuildContext context) {
@@ -90,6 +91,7 @@ class _MyHomeState extends State<MyHome> {
             rangeSelectionBackgroundColor: Colors.blue[200],
             scrollBehavior: MaterialDragScrollBehavior(),
             scrollDirection: Axis.horizontal,
+            controller: controller,
             onDisplayedMonthChanged: (date) =>
                 setState(() => displayedMonth = date),
             selectableDayPredicate:
@@ -99,9 +101,15 @@ class _MyHomeState extends State<MyHome> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              IconButton(onPressed: null, icon: Icon(Icons.chevron_left)),
+              IconButton(
+                  onPressed: () => controller.previousMonth(
+                      duration: kTabScrollDuration, curve: Curves.easeInOut),
+                  icon: Icon(Icons.chevron_left)),
               Text(monthText),
-              IconButton(onPressed: null, icon: Icon(Icons.chevron_right)),
+              IconButton(
+                  onPressed: () => controller.nextMonth(
+                      duration: kTabScrollDuration, curve: Curves.easeInOut),
+                  icon: Icon(Icons.chevron_right)),
             ],
           ),
         ],

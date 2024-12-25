@@ -2,6 +2,7 @@ import 'package:date_n_time/date_n_time.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
+import 'calendar_page_controller.dart';
 import 'month_view.dart';
 
 import 'dart:math' as math;
@@ -17,6 +18,7 @@ class CalendarPageView extends StatefulWidget {
   final SelectableDatePredicate? selectableDayPredicate;
   final ScrollBehavior? scrollBehavior;
   final Axis scrollDirection;
+  final CalendarPageController? controller;
 
   CalendarPageView({
     required this.firstDate,
@@ -29,6 +31,7 @@ class CalendarPageView extends StatefulWidget {
     this.selectableDayPredicate,
     this.scrollBehavior,
     this.scrollDirection = Axis.horizontal,
+    this.controller,
     super.key,
   }) : initialDate = initialDate ?? LocalDate.now();
 
@@ -37,7 +40,7 @@ class CalendarPageView extends StatefulWidget {
 }
 
 class _CalenderPageViewState extends State<CalendarPageView> {
-  PageController? _controller;
+  PageController? _pageController;
   late LocalDate _firstMonth;
   late int _monthOffset;
   LocalDate? _selectedStartDate;
@@ -47,7 +50,8 @@ class _CalenderPageViewState extends State<CalendarPageView> {
   void initState() {
     super.initState();
     _firstMonth = widget.firstDate.atStartOfMonth();
-    _monthOffset = Period.between(_firstMonth, widget.initialDate).months;
+    final displayedMonth = widget.initialDate.atStartOfMonth();
+    _monthOffset = Period.between(_firstMonth, displayedMonth).months;
   }
 
   @override
@@ -59,17 +63,18 @@ class _CalenderPageViewState extends State<CalendarPageView> {
       builder: (context, constraints) {
         final width = constraints.maxWidth;
 
-        _controller?.dispose();
-        _controller = PageController(
+        _pageController?.dispose();
+        _pageController = PageController(
           initialPage: _monthOffset,
           viewportFraction: math.min(1, itemExtent / width),
         );
-        _controller!.addListener(_onScrollUpdate);
+        _pageController!.addListener(_onScrollUpdate);
+        widget.controller?.attach(_pageController!);
 
         return PageView.builder(
           scrollBehavior: widget.scrollBehavior,
           scrollDirection: widget.scrollDirection,
-          controller: _controller,
+          controller: _pageController,
           itemCount: totalMonths,
           itemBuilder: (context, index) {
             final month = _firstMonth + Period(months: index);
@@ -119,11 +124,11 @@ class _CalenderPageViewState extends State<CalendarPageView> {
   }
 
   _onScrollUpdate() {
-    if (!_controller!.hasClients) {
+    if (!_pageController!.hasClients) {
       return;
     }
 
-    final newMonthOffset = _controller!.page!.round();
+    final newMonthOffset = _pageController!.page!.round();
 
     if (_monthOffset != newMonthOffset) {
       setState(() {
