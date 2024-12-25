@@ -78,17 +78,25 @@ class DayView extends StatelessWidget {
       );
     }
 
-    if (isFirstDayOfSelectedRange ||
+    final showCard = isFirstDayOfSelectedRange ||
         isLastDayOfSelectedRange ||
-        !isInsideSelectedRange) {
-      widget = Card.filled(
-        color: resolvedBackgroundColor ?? Colors.transparent,
-        margin: const EdgeInsets.all(2),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-        clipBehavior: Clip.antiAlias,
-        child: widget,
-      );
-    }
+        !isInsideSelectedRange;
+    final isSingleSelectedDay =
+        isFirstDayOfSelectedRange && isLastDayOfSelectedRange;
+    final showLeft = !isSingleSelectedDay &&
+        !isFirstDayOfSelectedRange &&
+        isInsideSelectedRange;
+    final showRight = !isSingleSelectedDay &&
+        !isLastDayOfSelectedRange &&
+        isInsideSelectedRange;
+
+    widget = Card.filled(
+      color: (showCard ? resolvedBackgroundColor : null) ?? Colors.transparent,
+      margin: const EdgeInsets.all(2),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+      clipBehavior: Clip.antiAlias,
+      child: widget,
+    );
 
     return Stack(
       fit: StackFit.expand,
@@ -100,16 +108,14 @@ class DayView extends StatelessWidget {
             children: [
               Expanded(
                 child: Container(
-                  color: !isFirstDayOfSelectedRange && isInsideSelectedRange
-                      ? resolvedRangeSelectionBackgroundColor
-                      : null,
+                  color:
+                      showLeft ? resolvedRangeSelectionBackgroundColor : null,
                 ),
               ),
               Expanded(
                 child: Container(
-                  color: !isLastDayOfSelectedRange && isInsideSelectedRange
-                      ? resolvedRangeSelectionBackgroundColor
-                      : null,
+                  color:
+                      showRight ? resolvedRangeSelectionBackgroundColor : null,
                 ),
               ),
             ],

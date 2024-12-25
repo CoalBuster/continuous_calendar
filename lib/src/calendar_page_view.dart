@@ -2,7 +2,6 @@ import 'package:date_n_time/date_n_time.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
-import 'material_drag_scroll_behavior.dart';
 import 'month_view.dart';
 
 import 'dart:math' as math;
@@ -16,6 +15,8 @@ class CalendarPageView extends StatefulWidget {
   final LocalDate initialDate;
   final ValueChanged<LocalDate>? onDisplayedMonthChanged;
   final SelectableDatePredicate? selectableDayPredicate;
+  final ScrollBehavior? scrollBehavior;
+  final Axis scrollDirection;
 
   CalendarPageView({
     required this.firstDate,
@@ -26,6 +27,8 @@ class CalendarPageView extends StatefulWidget {
     LocalDate? initialDate,
     this.onDisplayedMonthChanged,
     this.selectableDayPredicate,
+    this.scrollBehavior,
+    this.scrollDirection = Axis.horizontal,
     super.key,
   }) : initialDate = initialDate ?? LocalDate.now();
 
@@ -64,8 +67,8 @@ class _CalenderPageViewState extends State<CalendarPageView> {
         _controller!.addListener(_onScrollUpdate);
 
         return PageView.builder(
-          scrollBehavior: MaterialDragScrollBehavior(),
-          scrollDirection: Axis.horizontal,
+          scrollBehavior: widget.scrollBehavior,
+          scrollDirection: widget.scrollDirection,
           controller: _controller,
           itemCount: totalMonths,
           itemBuilder: (context, index) {

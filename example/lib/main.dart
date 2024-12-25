@@ -3,6 +3,8 @@ import 'package:date_n_time/date_n_time.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
+import 'src/material_drag_scroll_behavior.dart';
+
 void main() => runApp(const MyApp());
 
 class MyApp extends StatelessWidget {
@@ -86,6 +88,8 @@ class _MyHomeState extends State<MyHome> {
             lastDate: lastDate,
             dayBackgroundColorMap: colorMap,
             rangeSelectionBackgroundColor: Colors.blue[200],
+            scrollBehavior: MaterialDragScrollBehavior(),
+            scrollDirection: Axis.horizontal,
             onDisplayedMonthChanged: (date) =>
                 setState(() => displayedMonth = date),
             selectableDayPredicate:
@@ -147,38 +151,21 @@ class _MyHomeState extends State<MyHome> {
     return visibleMap;
   }
 
-  final _colorAvailable = WidgetStateColor.fromMap({
-    WidgetState.selected: Colors.green[800]!,
-    WidgetState.any: Colors.green[200]!,
+  static const _colorAvailable = WidgetStateColor.fromMap({
+    WidgetState.selected: Color(0xFF2E7D32),
+    WidgetState.any: Color(0xFFA5D6A7),
   });
-  final _colorBlocked = WidgetStateColor.fromMap({
-    WidgetState.selected: Colors.orange[800]!,
-    WidgetState.any: Colors.orange[200]!,
+  static const _colorBlocked = WidgetStateColor.fromMap({
+    WidgetState.selected: Color(0xFFEF6C00),
+    WidgetState.any: Color(0xFFFFCC80),
   });
-  final _colorBooked = WidgetStateColor.fromMap({
-    WidgetState.selected: Colors.red[800]!,
-    WidgetState.any: Colors.red[200]!,
+  static const _colorBooked = WidgetStateColor.fromMap({
+    WidgetState.selected: Color(0xFFC62828),
+    WidgetState.any: Color(0xFFEF9A9A),
   });
-  final _colorUnavailable = WidgetStateColor.fromMap({
-    WidgetState.any: Colors.grey[300]!,
+  static const _colorUnavailable = WidgetStateColor.fromMap({
+    WidgetState.any: Color(0xFFE0E0E0),
   });
-  final _colorText = WidgetStateColor.fromMap({
-    WidgetState.selected: Colors.white,
-    WidgetState.any: Colors.black,
-  });
-
-  // dayBackgroundColorMap: dayColorMap?.map(
-  //           (key, value) => MapEntry(
-  //             key,
-  //             WidgetStateColor.fromMap({WidgetState.any: value}),
-  //           ),
-  //         ),
-  //         dayForegroundColorMap: dayTextColorMap?.map(
-  //           (key, value) => MapEntry(
-  //             key,
-  //             WidgetStateColor.fromMap({WidgetState.any: value}),
-  //           ),
-  //         ),
 }
 
 enum Availability {
