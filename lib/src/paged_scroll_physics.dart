@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 class PagedScrollPhysics extends ScrollPhysics {
   final double itemDimension;
 
-  PagedScrollPhysics({required this.itemDimension, ScrollPhysics? parent})
-      : super(parent: parent);
+  const PagedScrollPhysics({required this.itemDimension, super.parent})
+      : super();
 
   @override
   PagedScrollPhysics applyTo(ScrollPhysics? ancestor) {
@@ -35,13 +35,18 @@ class PagedScrollPhysics extends ScrollPhysics {
   Simulation? createBallisticSimulation(
       ScrollMetrics position, double velocity) {
     if ((velocity <= 0.0 && position.pixels <= position.minScrollExtent) ||
-        (velocity >= 0.0 && position.pixels >= position.maxScrollExtent))
+        (velocity >= 0.0 && position.pixels >= position.maxScrollExtent)) {
       return super.createBallisticSimulation(position, velocity);
-    final Tolerance tolerance = this.tolerance;
+    }
+
+    final Tolerance tolerance = toleranceFor(position);
     final double target = _getTargetPixels(position, tolerance, velocity);
-    if (target != position.pixels)
+
+    if (target != position.pixels) {
       return ScrollSpringSimulation(spring, position.pixels, target, velocity,
           tolerance: tolerance);
+    }
+
     return null;
   }
 
