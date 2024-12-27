@@ -56,7 +56,8 @@ class _CalenderPageViewState extends State<CalendarPageView> {
 
   @override
   Widget build(BuildContext context) {
-    final totalMonths = Period.between(_firstMonth, widget.lastDate).months + 1;
+    final period = Period.between(_firstMonth, widget.lastDate);
+    final totalMonths = period.years * 12 + period.months + 1;
     final double itemExtent = 42 * 7 + 32;
 
     final list = LayoutBuilder(
