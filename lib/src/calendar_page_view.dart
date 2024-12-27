@@ -70,7 +70,7 @@ class _CalenderPageViewState extends State<CalendarPageView> {
           viewportFraction: math.min(1, itemExtent / width),
         );
         _pageController!.addListener(_onScrollUpdate);
-        widget.controller?.attach(_pageController!);
+        widget.controller?.attach(_pageController!, _firstMonth);
 
         return PageView.builder(
           scrollBehavior: widget.scrollBehavior,
