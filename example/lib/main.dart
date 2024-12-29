@@ -37,15 +37,11 @@ class MyHome extends StatefulWidget {
 }
 
 class _MyHomeState extends State<MyHome> {
-  LocalDate displayedMonth = LocalDate.now().atStartOfMonth();
+  // LocalDate displayedMonth = LocalDate.now().atStartOfMonth();
   CalendarPageController controller = CalendarPageController();
 
   @override
   Widget build(BuildContext context) {
-    final localizations = MaterialLocalizations.of(context);
-    final monthText = localizations
-        .formatMonthYear(displayedMonth.atStartOfDay().atZone(ZoneId.utc));
-
     final today = LocalDate.now();
     final firstDate = today.minus(2, ChronoUnit.months);
     final lastDate = today.plus(2, ChronoUnit.months);
@@ -92,25 +88,39 @@ class _MyHomeState extends State<MyHome> {
             scrollBehavior: MaterialDragScrollBehavior(),
             scrollDirection: Axis.horizontal,
             controller: controller,
-            onDisplayedMonthChanged: (date) =>
-                setState(() => displayedMonth = date),
+            // onDisplayedMonthChanged: (date) =>
+            //     setState(() => displayedMonth = date),
             selectableDayPredicate:
                 (date, selectedStartDate, selectedEndDate) =>
                     availability[date] == Availability.available,
           ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              IconButton(
-                  onPressed: () => controller.previousMonth(
-                      duration: kTabScrollDuration, curve: Curves.easeInOut),
-                  icon: Icon(Icons.chevron_left)),
-              Text(monthText),
-              IconButton(
-                  onPressed: () => controller.nextMonth(
-                      duration: kTabScrollDuration, curve: Curves.easeInOut),
-                  icon: Icon(Icons.chevron_right)),
-            ],
+          ListenableBuilder(
+            listenable: controller,
+            builder: (context, child) {
+              final localizations = MaterialLocalizations.of(context);
+              final monthText = localizations.formatMonthYear(
+                  controller.value.atStartOfDay().atZone(ZoneId.utc));
+
+              return Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  IconButton(
+                    onPressed: controller.previousMonth,
+                    icon: Icon(Icons.chevron_left),
+                  ),
+                  Text(monthText),
+                  IconButton(
+                    onPressed: controller.nextMonth,
+                    icon: Icon(Icons.chevron_right),
+                  ),
+                  IconButton(
+                    onPressed: () => controller
+                        .toMonth(controller.value.plus(2, ChronoUnit.months)),
+                    icon: Icon(Icons.fast_forward),
+                  )
+                ],
+              );
+            },
           ),
         ],
       ),

@@ -62,7 +62,7 @@ class MonthView extends StatelessWidget {
   }
 
   Widget _buildDay(LocalDate date, bool inMonth) {
-    final isSelected = selectedStartDate == null
+    final isSelected = !inMonth || selectedStartDate == null
         ? false
         : selectedEndDate == null
             ? date == selectedStartDate

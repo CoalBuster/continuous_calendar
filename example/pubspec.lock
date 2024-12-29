@@ -47,15 +47,15 @@ packages:
       path: ".."
       relative: true
     source: path
-    version: "1.0.0"
+    version: "0.0.4"
   date_n_time:
     dependency: "direct main"
     description:
       name: date_n_time
-      sha256: de28701dc56003a8cfc7351fd04b6e392deeb093d46960b0a0906b0bd3a004d2
+      sha256: "593de5c2c5e601dd25a789039f38c5f68e6a1309fafa893387fae5b05b5ee827"
       url: "https://pub.dev"
     source: hosted
-    version: "1.0.7"
+    version: "1.0.9"
   fake_async:
     dependency: transitive
     description:

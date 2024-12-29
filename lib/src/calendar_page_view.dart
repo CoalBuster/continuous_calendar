@@ -1,11 +1,27 @@
+import 'dart:math' as math;
+
 import 'package:date_n_time/date_n_time.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 
-import 'calendar_page_controller.dart';
 import 'month_view.dart';
 
-import 'dart:math' as math;
+class CalendarPageController extends ValueNotifier<LocalDate> {
+  CalendarPageController({LocalDate? initialMonth})
+      : super(
+            initialMonth?.atStartOfMonth() ?? LocalDate.now().atStartOfMonth());
+
+  void previousMonth() {
+    value = value.minus(1, ChronoUnit.months);
+  }
+
+  void nextMonth() {
+    value = value.plus(1, ChronoUnit.months);
+  }
+
+  void toMonth(LocalDate value) {
+    this.value = value.atStartOfMonth();
+  }
+}
 
 class CalendarPageView extends StatefulWidget {
   final Map<LocalDate, WidgetStateProperty<Color?>>? dayBackgroundColorMap;
@@ -15,6 +31,7 @@ class CalendarPageView extends StatefulWidget {
   final LocalDate lastDate;
   final LocalDate initialDate;
   final ValueChanged<LocalDate>? onDisplayedMonthChanged;
+  final void Function(LocalDate? start, LocalDate? end)? onSelectionChanged;
   final SelectableDatePredicate? selectableDayPredicate;
   final ScrollBehavior? scrollBehavior;
   final Axis scrollDirection;
@@ -28,6 +45,7 @@ class CalendarPageView extends StatefulWidget {
     this.rangeSelectionBackgroundColor,
     LocalDate? initialDate,
     this.onDisplayedMonthChanged,
+    this.onSelectionChanged,
     this.selectableDayPredicate,
     this.scrollBehavior,
     this.scrollDirection = Axis.horizontal,
@@ -40,37 +58,56 @@ class CalendarPageView extends StatefulWidget {
 }
 
 class _CalenderPageViewState extends State<CalendarPageView> {
-  PageController? _pageController;
+  late CalendarPageController _controller;
+  late PageController _pageController;
   late LocalDate _firstMonth;
-  late int _monthOffset;
+
+  bool _animating = false;
+  bool _scrolling = false;
   LocalDate? _selectedStartDate;
   LocalDate? _selectedEndDate;
+
+  int get _offset => Period.between(_firstMonth, _controller.value).totalMonths;
 
   @override
   void initState() {
     super.initState();
+    _controller = widget.controller ??
+        CalendarPageController(initialMonth: widget.initialDate);
+    _controller.addListener(_onMonthChanged);
     _firstMonth = widget.firstDate.atStartOfMonth();
-    final displayedMonth = widget.initialDate.atStartOfMonth();
-    _monthOffset = Period.between(_firstMonth, displayedMonth).months;
+    _pageController = PageController(initialPage: _offset);
+  }
+
+  @override
+  void didUpdateWidget(covariant CalendarPageView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (oldWidget.controller != null && _controller != widget.controller) {
+      final displayedMonth = _controller.value;
+      _controller.dispose();
+      _controller = widget.controller ??
+          CalendarPageController(initialMonth: displayedMonth);
+      _controller.addListener(_onMonthChanged);
+      _onMonthChanged();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final period = Period.between(_firstMonth, widget.lastDate);
-    final totalMonths = period.years * 12 + period.months + 1;
+    final totalMonths =
+        Period.between(_firstMonth, widget.lastDate).totalMonths + 1;
     final double itemExtent = 42 * 7 + 32;
 
     final list = LayoutBuilder(
       builder: (context, constraints) {
         final width = constraints.maxWidth;
 
-        _pageController?.dispose();
+        _pageController.dispose();
         _pageController = PageController(
-          initialPage: _monthOffset,
+          initialPage: _offset,
           viewportFraction: math.min(1, itemExtent / width),
         );
-        _pageController!.addListener(_onScrollUpdate);
-        widget.controller?.attach(_pageController!, _firstMonth);
 
         return PageView.builder(
           scrollBehavior: widget.scrollBehavior,
@@ -81,6 +118,7 @@ class _CalenderPageViewState extends State<CalendarPageView> {
             final month = _firstMonth + Period(months: index);
             return _buildMonth(month);
           },
+          onPageChanged: _onPageChanged,
         );
       },
     );
@@ -117,26 +155,40 @@ class _CalenderPageViewState extends State<CalendarPageView> {
           date < _selectedStartDate!) {
         _selectedStartDate = date;
         _selectedEndDate = null;
+        widget.onSelectionChanged?.call(_selectedStartDate, _selectedEndDate);
         return;
       }
 
       _selectedEndDate = date;
+      widget.onSelectionChanged?.call(_selectedStartDate, _selectedEndDate);
     });
   }
 
-  _onScrollUpdate() {
-    if (!_pageController!.hasClients) {
+  _onMonthChanged() {
+    if (_scrolling) {
       return;
     }
 
-    final newMonthOffset = _pageController!.page!.round();
+    final month = _firstMonth.plus(_offset, ChronoUnit.months);
+    final future = _pageController.animateToPage(
+      _offset,
+      duration: kTabScrollDuration,
+      curve: Curves.easeInOut,
+    );
+    _animating = true;
+    future.then((_) => _animating = false);
+    widget.onDisplayedMonthChanged?.call(month);
+  }
 
-    if (_monthOffset != newMonthOffset) {
-      setState(() {
-        _monthOffset = newMonthOffset;
-        final month = _firstMonth.plus(_monthOffset, ChronoUnit.months);
-        widget.onDisplayedMonthChanged?.call(month);
-      });
+  _onPageChanged(int offset) {
+    if (_animating) {
+      return;
     }
+
+    final month = _firstMonth.plus(offset, ChronoUnit.months);
+    _scrolling = true;
+    _controller.value = month;
+    widget.onDisplayedMonthChanged?.call(month);
+    _scrolling = false;
   }
 }

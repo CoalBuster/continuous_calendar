@@ -11,7 +11,7 @@ dependencies:
   flutter:
     sdk: flutter
   
-  date_n_time: ^1.0.7
+  date_n_time: ^1.0.9
 
 dev_dependencies:
   flutter_test:
