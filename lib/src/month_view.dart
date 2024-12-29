@@ -68,8 +68,8 @@ class MonthView extends StatelessWidget {
             ? date == selectedStartDate
             : LocalDateRange(selectedStartDate!, selectedEndDate!)
                 .contains(date);
-    final isFirstDay = date == selectedStartDate;
-    final isLastDay = date == (selectedEndDate ?? selectedStartDate);
+    final isFirstDay = inMonth && date == selectedStartDate;
+    final isLastDay = inMonth && date == (selectedEndDate ?? selectedStartDate);
 
     return DayView(
       date: date,
