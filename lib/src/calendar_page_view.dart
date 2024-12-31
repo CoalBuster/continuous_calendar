@@ -33,6 +33,12 @@ class CalendarPageController with ChangeNotifier {
     notifyListeners();
   }
 
+  void setSelection(LocalDate? start, LocalDate? end) {
+    _selectedStartDate = start;
+    _selectedEndDate = end;
+    notifyListeners();
+  }
+
   void resetSelection() {
     _selectedStartDate = null;
     _selectedEndDate = null;
@@ -173,11 +179,13 @@ class _CalenderPageViewState extends State<CalendarPageView> {
           date < _selectedStartDate!) {
         _selectedStartDate = date;
         _selectedEndDate = null;
+        _controller.setSelection(_selectedStartDate, _selectedEndDate);
         widget.onSelectionChanged?.call(_selectedStartDate, _selectedEndDate);
         return;
       }
 
       _selectedEndDate = date;
+      _controller.setSelection(_selectedStartDate, _selectedEndDate);
       widget.onSelectionChanged?.call(_selectedStartDate, _selectedEndDate);
     });
   }
