@@ -16,6 +16,8 @@ class MonthView extends StatelessWidget {
   final LocalDate? selectedEndDate;
   final SelectableDatePredicate? selectableDayPredicate;
   final void Function(LocalDate)? onChanged;
+  final TextStyle? dayTextStyle;
+  final TextStyle? headerTextStyle;
 
   const MonthView({
     required this.month,
@@ -26,6 +28,8 @@ class MonthView extends StatelessWidget {
     this.selectedEndDate,
     this.selectableDayPredicate,
     this.onChanged,
+    this.dayTextStyle,
+    this.headerTextStyle,
     super.key,
   });
 
@@ -85,6 +89,7 @@ class MonthView extends StatelessWidget {
               true)
           ? onChanged
           : null,
+      textStyle: dayTextStyle,
     );
   }
 
@@ -94,7 +99,10 @@ class MonthView extends StatelessWidget {
     final label = localizations.narrowWeekdays[dayOfWeek];
 
     return Center(
-      child: Text(label),
+      child: Text(
+        label,
+        style: headerTextStyle,
+      ),
     );
   }
 }

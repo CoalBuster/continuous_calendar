@@ -11,6 +11,7 @@ class DayView extends StatelessWidget {
   final WidgetStateProperty<Color?>? foregroundColor;
   final Color? rangeSelectionBackgroundColor;
   final ValueChanged<LocalDate>? onChanged;
+  final TextStyle? textStyle;
 
   const DayView({
     required this.date,
@@ -22,6 +23,7 @@ class DayView extends StatelessWidget {
     this.foregroundColor,
     this.rangeSelectionBackgroundColor,
     this.onChanged,
+    this.textStyle,
     super.key,
   });
 
@@ -51,7 +53,9 @@ class DayView extends StatelessWidget {
     final resolvedOverlayColor =
         calendarTheme.dayOverlayColor ?? calendarDefaultTheme.dayOverlayColor;
 
-    TextStyle dayTextStyle = TextStyle(color: resolvedForegroundColor);
+    TextStyle dayTextStyle =
+        textStyle?.copyWith(color: resolvedForegroundColor) ??
+            TextStyle(color: resolvedForegroundColor);
 
     final localizations = MaterialLocalizations.of(context);
 

@@ -59,6 +59,8 @@ class CalendarPageView extends StatefulWidget {
   final ScrollBehavior? scrollBehavior;
   final Axis scrollDirection;
   final CalendarPageController? controller;
+  final TextStyle? dayTextStyle;
+  final TextStyle? headerTextStyle;
 
   CalendarPageView({
     required this.firstDate,
@@ -73,6 +75,8 @@ class CalendarPageView extends StatefulWidget {
     this.scrollBehavior,
     this.scrollDirection = Axis.horizontal,
     this.controller,
+    this.dayTextStyle,
+    this.headerTextStyle,
     super.key,
   }) : initialDate = initialDate ?? LocalDate.now();
 
@@ -167,6 +171,8 @@ class _CalenderPageViewState extends State<CalendarPageView> {
           selectedEndDate: _selectedEndDate,
           selectableDayPredicate: widget.selectableDayPredicate,
           onChanged: _onChanged,
+          dayTextStyle: widget.dayTextStyle,
+          headerTextStyle: widget.headerTextStyle,
         ),
       ),
     );
