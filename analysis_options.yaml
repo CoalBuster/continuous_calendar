@@ -2,5 +2,5 @@ include: package:flutter_lints/flutter.yaml
 
 linter:
   rules:
-    - directives_ordering
-    - prefer_relative_imports
+    directives_ordering: true
+    prefer_relative_imports: true

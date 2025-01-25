@@ -1,6 +1,6 @@
 name: continuous_calendar
 description: "An adaptable heatmap + picker calendar that diplays multiple months, perfect for booking."
-version: 0.0.4
+version: 0.0.5
 repository: https://github.com/CoalBuster/continuous_calendar
 
 environment:

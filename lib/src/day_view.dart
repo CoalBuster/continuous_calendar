@@ -30,7 +30,6 @@ class DayView extends StatelessWidget {
     final calendarTheme = DatePickerTheme.of(context);
     final calendarDefaultTheme = DatePickerTheme.defaults(context);
     final cardTheme = CardTheme.of(context);
-    final textTheme = Theme.of(context).textTheme;
 
     final Set<WidgetState> states = {
       if (!enabled) WidgetState.disabled,
@@ -52,8 +51,7 @@ class DayView extends StatelessWidget {
     final resolvedOverlayColor =
         calendarTheme.dayOverlayColor ?? calendarDefaultTheme.dayOverlayColor;
 
-    TextStyle? dayTextStyle =
-        textTheme.bodyMedium?.apply(color: resolvedForegroundColor);
+    TextStyle dayTextStyle = TextStyle(color: resolvedForegroundColor);
 
     final localizations = MaterialLocalizations.of(context);
 
