@@ -3,42 +3,66 @@ import 'package:flutter/material.dart';
 
 class DayView extends StatelessWidget {
   final LocalDate date;
-  // final LocalDateRange? selection;
   final bool enabled;
   final bool isInsideSelectedRange;
   final bool isFirstDayOfSelectedRange;
   final bool isLastDayOfSelectedRange;
-  final Color? backgroundColor;
-  final Color? foregroundColor;
-  final Color highlightColor;
-  final Color? selectedColor;
+  final bool isToday;
+  final WidgetStateProperty<Color?>? backgroundColor;
+  final WidgetStateProperty<Color?>? foregroundColor;
+  final Color? rangeSelectionBackgroundColor;
+  final ValueChanged<LocalDate>? onChanged;
+  final TextStyle? textStyle;
 
   const DayView({
     required this.date,
     required this.enabled,
-    // this.selection,
     required this.isInsideSelectedRange,
     required this.isFirstDayOfSelectedRange,
     required this.isLastDayOfSelectedRange,
+    required this.isToday,
     this.backgroundColor,
     this.foregroundColor,
-    required this.highlightColor,
-    this.selectedColor,
+    this.rangeSelectionBackgroundColor,
+    this.onChanged,
+    this.textStyle,
     super.key,
   });
 
   @override
   Widget build(BuildContext context) {
+    final calendarTheme = DatePickerTheme.of(context);
+    final calendarDefaultTheme = DatePickerTheme.defaults(context);
     final cardTheme = CardTheme.of(context);
-    final theme = Theme.of(context);
-    final textTheme = theme.textTheme;
 
-    TextStyle? dayTextStyle = textTheme.bodyMedium
-        ?.apply(color: enabled ? foregroundColor : theme.disabledColor);
+    final Set<WidgetState> states = {
+      if (!enabled) WidgetState.disabled,
+      if (isFirstDayOfSelectedRange || isLastDayOfSelectedRange)
+        WidgetState.selected,
+    };
 
-    // final isSelected = selection?.contains(date) ?? false;
-    // final isFirstDay = isSelected && date == selection!.start;
-    // final isLastDay = isSelected && date == selection!.end;
+    final resolvedBackgroundColor = backgroundColor?.resolve(states) ??
+        calendarTheme.dayBackgroundColor?.resolve(states) ??
+        calendarDefaultTheme.dayBackgroundColor?.resolve(states);
+    final resolvedForegroundColor =
+        (isInsideSelectedRange ? null : foregroundColor?.resolve(states)) ??
+            calendarTheme.dayForegroundColor?.resolve(states) ??
+            calendarDefaultTheme.dayForegroundColor?.resolve(states);
+    final resolvedRangeSelectionBackgroundColor =
+        rangeSelectionBackgroundColor ??
+            calendarTheme.rangeSelectionBackgroundColor ??
+            calendarDefaultTheme.rangeSelectionBackgroundColor;
+    final resolvedOverlayColor =
+        calendarTheme.dayOverlayColor ?? calendarDefaultTheme.dayOverlayColor;
+
+    TextStyle dayTextStyle = textStyle?.copyWith(
+          color: resolvedForegroundColor,
+          fontWeight: isToday ? FontWeight.bold : null,
+        ) ??
+        TextStyle(
+          color: resolvedForegroundColor,
+          fontWeight: isToday ? FontWeight.bold : null,
+        );
 
     final localizations = MaterialLocalizations.of(context);
 
@@ -55,16 +79,33 @@ class DayView extends StatelessWidget {
       return widget;
     }
 
-    if (isFirstDayOfSelectedRange ||
-        isLastDayOfSelectedRange ||
-        !isInsideSelectedRange) {
-      widget = Card.filled(
-        color: isInsideSelectedRange ? selectedColor : backgroundColor,
-        margin: const EdgeInsets.all(2),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+    if (onChanged != null) {
+      widget = InkWell(
+        overlayColor: resolvedOverlayColor,
+        onTap: () => onChanged!(date),
         child: widget,
       );
     }
+
+    final showCard = isFirstDayOfSelectedRange ||
+        isLastDayOfSelectedRange ||
+        !isInsideSelectedRange;
+    final isSingleSelectedDay =
+        isFirstDayOfSelectedRange && isLastDayOfSelectedRange;
+    final showLeft = !isSingleSelectedDay &&
+        !isFirstDayOfSelectedRange &&
+        isInsideSelectedRange;
+    final showRight = !isSingleSelectedDay &&
+        !isLastDayOfSelectedRange &&
+        isInsideSelectedRange;
+
+    widget = Card.filled(
+      color: (showCard ? resolvedBackgroundColor : null) ?? Colors.transparent,
+      margin: const EdgeInsets.all(2),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+      clipBehavior: Clip.antiAlias,
+      child: widget,
+    );
 
     return Stack(
       fit: StackFit.expand,
@@ -76,16 +117,14 @@ class DayView extends StatelessWidget {
             children: [
               Expanded(
                 child: Container(
-                  color: !isFirstDayOfSelectedRange && isInsideSelectedRange
-                      ? highlightColor
-                      : null,
+                  color:
+                      showLeft ? resolvedRangeSelectionBackgroundColor : null,
                 ),
               ),
               Expanded(
                 child: Container(
-                  color: !isLastDayOfSelectedRange && isInsideSelectedRange
-                      ? highlightColor
-                      : null,
+                  color:
+                      showRight ? resolvedRangeSelectionBackgroundColor : null,
                 ),
               ),
             ],

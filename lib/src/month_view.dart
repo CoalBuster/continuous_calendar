@@ -4,17 +4,34 @@ import 'package:flutter/material.dart';
 import 'day_view.dart';
 import 'rendering/month_grid_delegate.dart';
 
+typedef SelectableDatePredicate = bool Function(
+    LocalDate date, LocalDate? selectedStartDate, LocalDate? selectedEndDate);
+
 class MonthView extends StatelessWidget {
-  final Map<LocalDate, Color>? dayColorMap;
-  final Map<LocalDate, Color>? dayTextColorMap;
+  final Map<LocalDate, WidgetStateProperty<Color?>>? dayBackgroundColorMap;
+  final Map<LocalDate, WidgetStateProperty<Color?>>? dayForegroundColorMap;
+  final Color? rangeSelectionBackgroundColor;
   final LocalDate month;
-  final LocalDateRange? selection;
+  final LocalDate? today;
+  final LocalDate? selectedStartDate;
+  final LocalDate? selectedEndDate;
+  final SelectableDatePredicate? selectableDayPredicate;
+  final void Function(LocalDate)? onChanged;
+  final TextStyle? dayTextStyle;
+  final TextStyle? headerTextStyle;
 
   const MonthView({
     required this.month,
-    this.dayColorMap,
-    this.dayTextColorMap,
-    this.selection,
+    this.today,
+    this.dayBackgroundColorMap,
+    this.dayForegroundColorMap,
+    this.rangeSelectionBackgroundColor,
+    this.selectedStartDate,
+    this.selectedEndDate,
+    this.selectableDayPredicate,
+    this.onChanged,
+    this.dayTextStyle,
+    this.headerTextStyle,
     super.key,
   });
 
@@ -51,20 +68,32 @@ class MonthView extends StatelessWidget {
   }
 
   Widget _buildDay(LocalDate date, bool inMonth) {
-    final isSelected = selection?.contains(date) ?? false;
-    final isFirstDay = isSelected && date == selection!.start;
-    final isLastDay = isSelected && date == selection!.end;
+    final isSelected = !inMonth || selectedStartDate == null
+        ? false
+        : selectedEndDate == null
+            ? date == selectedStartDate
+            : LocalDateRange(selectedStartDate!, selectedEndDate!)
+                .contains(date);
+    final isFirstDay = inMonth && date == selectedStartDate;
+    final isLastDay = inMonth && date == (selectedEndDate ?? selectedStartDate);
+    final isToday = date == (today ?? LocalDate.now());
 
     return DayView(
       date: date,
       enabled: inMonth,
+      isToday: isToday,
       isInsideSelectedRange: isSelected,
       isFirstDayOfSelectedRange: isFirstDay,
       isLastDayOfSelectedRange: isLastDay,
-      backgroundColor: dayColorMap?[date],
-      foregroundColor: dayTextColorMap?[date],
-      highlightColor: Colors.pink,
-      selectedColor: Colors.amber,
+      backgroundColor: dayBackgroundColorMap?[date],
+      foregroundColor: dayForegroundColorMap?[date],
+      rangeSelectionBackgroundColor: rangeSelectionBackgroundColor,
+      onChanged: (selectableDayPredicate?.call(
+                  date, selectedStartDate, selectedEndDate) ??
+              true)
+          ? onChanged
+          : null,
+      textStyle: dayTextStyle,
     );
   }
 
@@ -74,7 +103,10 @@ class MonthView extends StatelessWidget {
     final label = localizations.narrowWeekdays[dayOfWeek];
 
     return Center(
-      child: Text(label),
+      child: Text(
+        label,
+        style: headerTextStyle,
+      ),
     );
   }
 }
