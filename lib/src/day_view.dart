@@ -7,6 +7,7 @@ class DayView extends StatelessWidget {
   final bool isInsideSelectedRange;
   final bool isFirstDayOfSelectedRange;
   final bool isLastDayOfSelectedRange;
+  final bool isToday;
   final WidgetStateProperty<Color?>? backgroundColor;
   final WidgetStateProperty<Color?>? foregroundColor;
   final Color? rangeSelectionBackgroundColor;
@@ -19,6 +20,7 @@ class DayView extends StatelessWidget {
     required this.isInsideSelectedRange,
     required this.isFirstDayOfSelectedRange,
     required this.isLastDayOfSelectedRange,
+    required this.isToday,
     this.backgroundColor,
     this.foregroundColor,
     this.rangeSelectionBackgroundColor,
@@ -53,9 +55,14 @@ class DayView extends StatelessWidget {
     final resolvedOverlayColor =
         calendarTheme.dayOverlayColor ?? calendarDefaultTheme.dayOverlayColor;
 
-    TextStyle dayTextStyle =
-        textStyle?.copyWith(color: resolvedForegroundColor) ??
-            TextStyle(color: resolvedForegroundColor);
+    TextStyle dayTextStyle = textStyle?.copyWith(
+          color: resolvedForegroundColor,
+          fontWeight: isToday ? FontWeight.bold : null,
+        ) ??
+        TextStyle(
+          color: resolvedForegroundColor,
+          fontWeight: isToday ? FontWeight.bold : null,
+        );
 
     final localizations = MaterialLocalizations.of(context);
 

@@ -12,6 +12,7 @@ class MonthView extends StatelessWidget {
   final Map<LocalDate, WidgetStateProperty<Color?>>? dayForegroundColorMap;
   final Color? rangeSelectionBackgroundColor;
   final LocalDate month;
+  final LocalDate? today;
   final LocalDate? selectedStartDate;
   final LocalDate? selectedEndDate;
   final SelectableDatePredicate? selectableDayPredicate;
@@ -21,6 +22,7 @@ class MonthView extends StatelessWidget {
 
   const MonthView({
     required this.month,
+    this.today,
     this.dayBackgroundColorMap,
     this.dayForegroundColorMap,
     this.rangeSelectionBackgroundColor,
@@ -74,10 +76,12 @@ class MonthView extends StatelessWidget {
                 .contains(date);
     final isFirstDay = inMonth && date == selectedStartDate;
     final isLastDay = inMonth && date == (selectedEndDate ?? selectedStartDate);
+    final isToday = date == (today ?? LocalDate.now());
 
     return DayView(
       date: date,
       enabled: inMonth,
+      isToday: isToday,
       isInsideSelectedRange: isSelected,
       isFirstDayOfSelectedRange: isFirstDay,
       isLastDayOfSelectedRange: isLastDay,
